@@ -35,4 +35,16 @@ I)      ROOT            II)   ROOT      CHILD
      *       *       *     *       *          *       *       *   *       *       *  
                                                        \     /     \
                                                         \---*       *
+                                                        
+                                                        
+                                                        
+  - circular roots
+                                                        
+  I)    ROOT         II)  ROOT           CHILD    
+         *                  *               *
+       /   \                 \               \
+      /_____*                 * -- *          *
+                               \   | 
+                                \  |          
+                                  *      
 ```
