@@ -189,6 +189,41 @@ class GarbageCollectorImplementationTest {
         Assertions.assertEquals(expectedGarbage.size(), actualGarbage.size());
         Assertions.assertTrue(actualGarbage.containsAll(expectedGarbage));
     }
+    
+    @Test
+    public void multiCircularDependencyTest() {
+        // GIVEN
+        ApplicationBean garbage = new ApplicationBean();
+        ApplicationBean restControllerBean = initializeControllerBean();
+        ApplicationBean serviceA = initializeServiceBean();
+        ApplicationBean serviceB = initializeServiceBean();
+        ApplicationBean serviceC = initializeServiceBean();
+
+        restControllerBean.addRelation("serviceA", serviceA);
+        serviceA.addRelation("serviceB", serviceB);
+        serviceB.addRelation("serviceC", serviceC);
+        serviceC.addRelation("serviceA", serviceA);
+
+        Map<String, ApplicationBean> heap = new HashMap<>();
+
+        heap.put("garbage", garbage);
+        heap.put("restController", restControllerBean);
+        heap.put("serviceA", serviceA);
+        heap.put("serviceB", serviceB);
+        heap.put("serviceC", serviceC);
+
+        final HeapInfo heapInfo = new HeapInfo(heap);
+        StackInfo stack = new StackInfo();
+        stack.push("main");
+        stack.push("foo", restControllerBean);
+
+        // WHEN
+        final List<ApplicationBean> actualGarbage = gc.collect(heapInfo, stack);
+
+        // THEN
+        Assertions.assertEquals(1, actualGarbage.size());
+        Assertions.assertSame(garbage, actualGarbage.get(0));
+    }
 
     private ApplicationBean initializeControllerBean() {
         final ApplicationBean restControllerBean = new ApplicationBean();
