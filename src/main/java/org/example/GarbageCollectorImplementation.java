@@ -13,8 +13,11 @@ public class GarbageCollectorImplementation implements GarbageCollector {
   @Override
   public List<ApplicationBean> collect(HeapInfo heap, StackInfo stack) {
     for (ApplicationBean bean: heap.getBeans().values()) {
-      fillGarbageList(bean);
+      if (!garbage.contains(bean)) {
+        garbage.add(bean);
+      }
     }
+
     List<ApplicationBean> beansInStack = stack.
             getStack()
             .stream()
@@ -26,18 +29,6 @@ public class GarbageCollectorImplementation implements GarbageCollector {
     }
 
     return garbage;
-  }
-
-  private void fillGarbageList(ApplicationBean bean) {
-    if (!garbage.contains(bean)) {
-      garbage.add(bean);
-      bean.getFieldValues()
-              .forEach(
-                      (key, value) -> {
-                        fillGarbageList(value);
-                      });
-
-    }
   }
 
   private void deleteFromGarbageList(ApplicationBean bean) {
