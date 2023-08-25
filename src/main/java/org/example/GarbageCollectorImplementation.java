@@ -7,7 +7,9 @@ import java.util.List;
 
 
 public class GarbageCollectorImplementation implements GarbageCollector {
+
   private final List<ApplicationBean> garbage = new ArrayList<>();
+
   @Override
   public List<ApplicationBean> collect(HeapInfo heap, StackInfo stack) {
     for (ApplicationBean bean: heap.getBeans().values()) {
