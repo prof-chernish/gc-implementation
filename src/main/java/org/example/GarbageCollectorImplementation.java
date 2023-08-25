@@ -2,18 +2,51 @@ package org.example;
 
 
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
-import java.util.Map;
+
 
 
 public class GarbageCollectorImplementation implements GarbageCollector {
+  List<ApplicationBean> garbage = new ArrayList<>();
   @Override
   public List<ApplicationBean> collect(HeapInfo heap, StackInfo stack) {
-    Map<String, ApplicationBean> beans = heap.getBeans();
-    Deque<StackInfo.Frame> frames = stack.getStack();
-    return new ArrayList<>();
+    for (ApplicationBean bean: heap.getBeans().values()) {
+      fillGarbageList(bean);
+    }
+    List<ApplicationBean> beansInStack = stack.
+            getStack()
+            .stream()
+            .flatMap(frame -> frame.getParameters().stream())
+            .toList();
+
+    for (ApplicationBean bean: beansInStack) {
+      deleteFromGarbageList(bean);
+    }
+
+    return garbage;
   }
 
+  private void fillGarbageList(ApplicationBean bean) {
+    if (!garbage.contains(bean)) {
+      garbage.add(bean);
+      bean.getFieldValues()
+              .forEach(
+                      (key, value) -> {
+                        fillGarbageList(value);
+                      });
+
+    }
+  }
+
+  private void deleteFromGarbageList(ApplicationBean bean) {
+    if (garbage.contains(bean)) {
+      garbage.remove(bean);
+      bean.getFieldValues()
+              .forEach(
+                      (key, value) -> {
+                        deleteFromGarbageList(value);
+                      });
+    }
+  }
 }
 
